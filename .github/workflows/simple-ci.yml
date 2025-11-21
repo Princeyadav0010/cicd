@@ -1,0 +1,97 @@
+name: Simple CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test and Validate
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate HTML File
+        run: |
+          echo "🔍 Starting validation..."
+          
+          # Check if index.html exists
+          if [ ! -f "index.html" ]; then
+            echo "❌ index.html not found!"
+            exit 1
+          fi
+          echo "✅ index.html found"
+          
+          # Check if file is not empty
+          if [ ! -s "index.html" ]; then
+            echo "❌ index.html is empty!"
+            exit 1
+          fi
+          echo "✅ index.html is not empty"
+          
+          # Check for basic HTML structure
+          if grep -q "<!DOCTYPE html>" index.html; then
+            echo "✅ Valid DOCTYPE declaration found"
+          else
+            echo "⚠️  Warning: No DOCTYPE declaration found"
+          fi
+          
+          if grep -q "<html" index.html; then
+            echo "✅ HTML tag found"
+          else
+            echo "❌ No HTML tag found!"
+            exit 1
+          fi
+          
+          if grep -q "</html>" index.html; then
+            echo "✅ Closing HTML tag found"
+          else
+            echo "❌ No closing HTML tag found!"
+            exit 1
+          fi
+          
+          echo "🎉 HTML validation completed successfully!"
+
+      - name: Check Project Structure
+        run: |
+          echo "📁 Project structure:"
+          find . -name "*.html" -o -name "*.css" -o -name "*.js" | head -20
+          
+          echo "📊 File sizes:"
+          du -h *.html 2>/dev/null || echo "No HTML files found"
+          du -h *.css 2>/dev/null || echo "No CSS files found"
+          du -h *.js 2>/dev/null || echo "No JS files found"
+
+      - name: Content Preview
+        run: |
+          echo "📄 HTML content preview (first 15 lines):"
+          head -15 index.html
+          
+          echo "📏 File statistics:"
+          wc -l index.html
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    name: Build & Deploy Ready
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Prepare for Deployment
+        run: |
+          echo "🏗️  Building project..."
+          echo "✅ Static files are ready for deployment"
+          echo "📦 Files to be deployed:"
+          ls -la *.html *.css 2>/dev/null || echo "No web files found"
+
+      - name: Deployment Status
+        run: |
+          echo "🚀 Project is ready for deployment!"
+          echo "✨ Hello Prince 3D Animation is validated and ready to go live!"
+          echo "🎯 All checks passed successfully!"
